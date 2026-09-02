@@ -109,7 +109,7 @@ function Dropdown({
                 onSelect(opt);
                 setOpen(false);
               }}
-              className="bg-white hover:bg-cloud flex flex-col h-[52px] items-start justify-center px-3 w-full text-left"
+              className="bg-white hover:bg-cloud flex flex-col min-h-[52px] items-start justify-center px-3 py-2 w-full text-left"
             >
               <p className="font-normal text-[16px] text-black" style={wdth}>
                 {opt}
