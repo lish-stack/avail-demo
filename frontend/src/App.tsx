@@ -182,31 +182,46 @@ export default function App() {
           {/* Replace /logo.svg with the real exported asset — see SETUP.md */}
           <img src="/logo.svg" alt="Consider Sentience" className="h-8" />
         </a>
-        <a href="https://considersentience.ai" className="group flex gap-[5px] items-center justify-center text-center whitespace-nowrap">
-          <span className="hidden group-hover:inline-flex items-center justify-end w-2 h-4">
-            <span className="block size-1 rounded-full bg-[rgba(201,124,46,0.7)]" />
-          </span>
-          <span
-            className="font-['Nunito'] font-extralight group-hover:font-light text-[20px] capitalize text-cloud group-hover:text-[rgba(201,124,46,0.7)]"
-            style={{ lineHeight: 'normal' }}
+        <a href="https://considersentience.ai" className="group relative block h-[21px]">
+          {/* Default state — exact port of Figma node 4:202 */}
+          <div
+            className="group-hover:hidden [word-break:break-word] content-stretch flex gap-[5px] items-center justify-center leading-[0] relative text-[#edeef1] text-center w-[127px] whitespace-nowrap"
           >
-            [
-          </span>
-          <span
-            className="text-[14px] text-cloud font-['IBM_Plex_Sans'] font-normal not-italic group-hover:font-['Source_Serif_4'] group-hover:font-medium group-hover:italic"
-            style={wdth}
-          >
-            return to site
-          </span>
-          <span
-            className="font-['Nunito'] font-extralight group-hover:font-light text-[20px] capitalize text-cloud group-hover:text-[rgba(201,124,46,0.7)]"
-            style={{ lineHeight: 'normal' }}
-          >
-            ]
-          </span>
-          <span className="hidden group-hover:inline-flex items-center h-4">
-            <span className="block size-1.5 rounded-full bg-[rgba(201,124,46,0.7)]" />
-          </span>
+            <div className="capitalize flex flex-col font-['Nunito'] font-extralight justify-center relative shrink-0 text-[20px]">
+              <p className="leading-none">[</p>
+            </div>
+            <div className="flex flex-col font-normal justify-center relative shrink-0 text-[14px]" style={wdth}>
+              <p className="leading-[1.5]">return to site</p>
+            </div>
+            <div className="capitalize flex flex-col font-['Nunito'] font-extralight justify-center relative shrink-0 text-[20px]">
+              <p className="leading-none">]</p>
+            </div>
+          </div>
+
+          {/* Hover state — exact port of Figma node 4:206, no width constraint (matches source) */}
+          <div className="hidden group-hover:flex gap-[5px] items-center justify-center relative absolute top-0 left-0">
+            <div className="flex flex-row items-center self-stretch">
+              <div className="content-stretch flex h-full items-center justify-end relative shrink-0 w-[8px]">
+                <div className="relative shrink-0 size-[4px] rounded-full bg-[rgba(201,124,46,0.7)]" />
+              </div>
+            </div>
+            <div className="[word-break:break-word] capitalize flex flex-col font-['Nunito'] font-light justify-center leading-[0] relative shrink-0 text-[20px] text-[rgba(201,124,46,0.7)] text-center whitespace-nowrap">
+              <p className="leading-none">[</p>
+            </div>
+            <div className="[word-break:break-word] flex flex-col font-['Source_Serif_4'] font-medium italic justify-center leading-[0] relative shrink-0 text-[#edeef1] text-[14px] text-center whitespace-nowrap">
+              <p className="leading-[1.5]">return to site</p>
+            </div>
+            <div className="[word-break:break-word] capitalize flex flex-col font-['Nunito'] font-light justify-center leading-[0] relative shrink-0 text-[20px] text-[rgba(201,124,46,0.7)] text-center whitespace-nowrap">
+              <p className="leading-none">]</p>
+            </div>
+            <div className="flex flex-row items-center self-stretch">
+              <div className="content-stretch flex h-full items-center relative shrink-0">
+                <div className="content-stretch flex h-full items-center relative shrink-0">
+                  <div className="relative shrink-0 size-[6px] rounded-full bg-[rgba(201,124,46,0.7)]" />
+                </div>
+              </div>
+            </div>
+          </div>
         </a>
       </header>
 
