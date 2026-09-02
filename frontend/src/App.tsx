@@ -182,10 +182,31 @@ export default function App() {
           {/* Replace /logo.svg with the real exported asset — see SETUP.md */}
           <img src="/logo.svg" alt="Consider Sentience" className="h-8" />
         </a>
-        <a href="https://considersentience.ai" className="group flex gap-[5px] items-center text-center whitespace-nowrap">
-          <span className="font-['Nunito'] font-extralight text-[20px] capitalize text-cloud group-hover:text-rust/70" style={{ lineHeight: 'normal' }}>[</span>
-          <span className="font-normal text-[14px] text-cloud group-hover:text-rust/70" style={wdth}>return to site</span>
-          <span className="font-['Nunito'] font-extralight text-[20px] capitalize text-cloud group-hover:text-rust/70" style={{ lineHeight: 'normal' }}>]</span>
+        <a href="https://considersentience.ai" className="group flex gap-[5px] items-center justify-center text-center whitespace-nowrap">
+          <span className="hidden group-hover:inline-flex items-center justify-end w-2 h-4">
+            <span className="block size-1 rounded-full bg-[rgba(201,124,46,0.7)]" />
+          </span>
+          <span
+            className="font-['Nunito'] font-extralight group-hover:font-light text-[20px] capitalize text-cloud group-hover:text-[rgba(201,124,46,0.7)]"
+            style={{ lineHeight: 'normal' }}
+          >
+            [
+          </span>
+          <span
+            className="text-[14px] text-cloud font-['IBM_Plex_Sans'] font-normal not-italic group-hover:font-['Source_Serif_4'] group-hover:font-medium group-hover:italic"
+            style={wdth}
+          >
+            return to site
+          </span>
+          <span
+            className="font-['Nunito'] font-extralight group-hover:font-light text-[20px] capitalize text-cloud group-hover:text-[rgba(201,124,46,0.7)]"
+            style={{ lineHeight: 'normal' }}
+          >
+            ]
+          </span>
+          <span className="hidden group-hover:inline-flex items-center h-4">
+            <span className="block size-1.5 rounded-full bg-[rgba(201,124,46,0.7)]" />
+          </span>
         </a>
       </header>
 
