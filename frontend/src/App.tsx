@@ -175,12 +175,13 @@ export default function App() {
   }
 
   return (
-    <div className="bg-ink flex flex-col items-center w-full min-h-screen">
-      {/* Header */}
-      <header className="bg-ink flex flex-col gap-2 items-start justify-center p-4 w-full">
-        <a href="https://considersentience.ai" className="h-8 block">
+    <div className="bg-ink flex flex-col items-center w-full min-h-screen relative">
+      {/* Header — absolutely positioned overlay on top of Hero's own pt-[120px],
+          NOT a normal stacked block (this was the bug causing extra top space) */}
+      <header className="absolute top-0 left-0 right-0 bg-ink flex flex-col gap-[8px] items-start justify-center p-[16px] z-10">
+        <a href="https://considersentience.ai" className="block h-[32px] w-[199px]">
           {/* Replace /logo.svg with the real exported asset — see SETUP.md */}
-          <img src="/logo.svg" alt="Consider Sentience" className="h-8" />
+          <img src="/logo.svg" alt="Consider Sentience" className="h-[32px] w-[199px] object-cover" />
         </a>
         <a href="https://considersentience.ai" className="group relative block h-[21px]">
           {/* Default state — exact port of Figma node 4:202 */}
@@ -248,8 +249,8 @@ export default function App() {
             <span className="font-['Source_Serif_4'] italic font-medium text-white/70 text-[14px] tracking-[-0.28px]">
               a project from
             </span>
-            <a href="https://considersentience.ai" className="h-5 block">
-              <img src="/logo.svg" alt="Consider Sentience" className="h-5" />
+            <a href="https://considersentience.ai" className="block h-[20px] w-[124px]">
+              <img src="/logo.svg" alt="Consider Sentience" className="h-[20px] w-[124px] object-cover" />
             </a>
             <span className="font-['Nunito'] text-rust text-[20px] tracking-[-0.4px]">]</span>
           </div>
@@ -442,11 +443,11 @@ export default function App() {
       {/* Credibility section — exact values from Figma nodes 1:262 (desktop/tablet), 1:363 (mobile) */}
       <section className="flex flex-col gap-4 items-start px-[24px] md:px-[128px] xl:px-[256px] py-8 w-full">
         <p className="text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud" style={wdth}>
-          <span className="font-normal">This demo is </span>
-          <span className="text-rust">one query</span>
-          <span className="font-normal">. </span>
-          <span className="font-normal">Our pilot ran</span>
-          <span className="text-rust"> 480</span>
+          <span className="font-normal tracking-[0.32px]">This demo is </span>
+          <span className="text-rust tracking-[0.32px]">one query</span>
+          <span className="font-normal tracking-[0.32px]">. </span>
+          <span className="font-normal tracking-[0.32px]">Our pilot ran</span>
+          <span className="text-rust tracking-[0.32px]"> 480</span>
           <span>.</span>
         </p>
         <p className="text-cloud text-[15px] leading-[1.6]" style={wdth}>
