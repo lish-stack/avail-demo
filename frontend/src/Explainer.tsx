@@ -1,23 +1,23 @@
-import { AccordionRow, FindingCard, ModelsTable, wdth } from './shared';
+import { AccordionRow, FindingCard, ModelsTable, bodyCls, sectionCls, sectionTitleCls, wdth } from './shared';
 
-// "Why this matters" + "Exactly which models" sections.
+// Section order matches the credibility section's layout exactly (same padding, same full-width text),
+// so line lengths and left edges line up across the page.
 // Numbers come from the verified pilot (60 questions x 4 assistants x 2 runs = 480 responses).
 
-function SectionTitle({ lead, accent, tail }: { lead: string; accent: string; tail?: string }) {
+export function SectionTitle({ lead, accent, tail }: { lead: string; accent: string; tail?: string }) {
   return (
-    <p className="text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud" style={wdth}>
-      <span className="font-normal tracking-[0.32px]">{lead} </span>
-      <span className="text-rust tracking-[0.32px]">{accent}</span>
-      {tail && <span className="font-normal tracking-[0.32px]"> {tail}</span>}
+    <p className={sectionTitleCls} style={wdth}>
+      {lead} <span className="font-medium text-rust">{accent}</span>
+      {tail ? ` ${tail}` : ''}
     </p>
   );
 }
 
 export function ModelsSection() {
   return (
-    <section className="flex flex-col gap-4 items-start px-[24px] md:px-[128px] xl:px-[256px] py-8 w-full">
+    <section className={sectionCls}>
       <SectionTitle lead="Exactly which" accent="models" tail="we ask" />
-      <p className="text-cloud text-[15px] leading-[1.6] max-w-[768px]" style={wdth}>
+      <p className={bodyCls} style={wdth}>
         Every check calls these model versions directly through their developer APIs, with web search turned on. We
         name them so results can be reproduced and compared. API results can differ from what you see in each company’s
         own app, and models are updated over time, so treat each result as a snapshot.
@@ -29,11 +29,11 @@ export function ModelsSection() {
 
 export function WhySection() {
   return (
-    <section className="flex flex-col gap-6 items-start px-[24px] md:px-[128px] xl:px-[256px] py-8 w-full">
+    <section className={sectionCls}>
       <SectionTitle lead="Why this" accent="matters" />
-      <p className="text-cloud text-[15px] leading-[1.6] max-w-[768px]" style={wdth}>
-        More people now ask an AI assistant before they open a search engine. When an assistant answers a question about
-        animals, the sources it cites decide whose expertise the reader sees, and whose gets skipped. Most
+      <p className={bodyCls} style={wdth}>
+        More people now ask an AI assistant before they open a search engine. When an assistant answers a question
+        about animals, the sources it cites decide whose expertise the reader sees, and whose gets skipped. Most
         organizations have never checked where they stand. In our pilot of 480 responses, here is what that looked like:
       </p>
 

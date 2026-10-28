@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dot,
   STATUS,
+  labelCls,
   Segmented,
   SiteFooter,
   SiteHeader,
@@ -59,7 +60,8 @@ function rateFor(items: Item[], runId: string, assistant: string): { rate: numbe
   return { rate: (ok.filter((i) => i.cited).length / ok.length) * 100, n: ok.length };
 }
 
-const th = 'font-semibold leading-[16px] text-slate text-[11px] uppercase';
+const th = labelCls;
+const subhead = 'text-cloud text-[20px] tracking-[0.4px] uppercase font-normal';
 
 export default function TrackerPage({ token }: { token: string }) {
   const [data, setData] = useState<Data | null>(null);
@@ -148,7 +150,7 @@ export default function TrackerPage({ token }: { token: string }) {
             {/* Title */}
             <div className="flex flex-col gap-2">
               <p className="text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud" style={wdth}>
-                <span className="text-rust">{data.tracker.orgName}</span>
+                <span className="font-medium text-rust">{data.tracker.orgName}</span>
               </p>
               <p className="text-cloud text-[15px]" style={wdth}>
                 {data.questions.length} questions ·{' '}
@@ -189,7 +191,7 @@ export default function TrackerPage({ token }: { token: string }) {
 
             {/* Per-model rate cards */}
             <div className="flex flex-col gap-3">
-              <p className="font-medium text-cloud text-[16px] tracking-[0.28px] uppercase" style={wdth}>
+              <p className={subhead} style={wdth}>
                 Cited directly, latest run{latest.status === 'running' ? ' (so far)' : ''}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -199,13 +201,13 @@ export default function TrackerPage({ token }: { token: string }) {
                   const prev = derived.previous ? rateFor(data.items, derived.previous.id, key) : null;
                   const delta = cur.rate !== null && prev?.rate != null ? cur.rate - prev.rate : null;
                   return (
-                    <div key={key} className="bg-white border border-[rgba(74,78,85,0.12)] rounded-[8px] p-[24px] flex flex-col gap-2">
-                      <p className="font-semibold leading-[44px] text-rust text-[36px]" style={wdth}>
+                    <div key={key} className="bg-cloud border border-rust rounded-lg p-6 flex flex-col gap-2">
+                      <p className="font-medium leading-[1.2] text-rust text-[28px] tracking-[0.56px]" style={wdth}>
                         {cur.rate === null ? '—' : `${Math.round(cur.rate)}%`}
                       </p>
-                      <p className="font-medium leading-[24px] text-ink text-[15px]" style={wdth}>{m?.name ?? key}</p>
+                      <p className={labelCls} style={wdth}>{m?.name ?? key}</p>
                       <p className="text-slate text-[12px] break-all" style={wdth}>{m?.modelId}</p>
-                      <p className="text-slate text-[13px]" style={wdth}>
+                      <p className="text-ink text-[14px] leading-[1.6]" style={wdth}>
                         {cur.n ? `${Math.round((cur.rate! / 100) * cur.n)} of ${cur.n} answers` : 'waiting for results'}
                         {delta !== null && delta !== 0 ? ` · ${delta > 0 ? '+' : ''}${Math.round(delta)} pts vs last run` : ''}
                       </p>
@@ -217,46 +219,43 @@ export default function TrackerPage({ token }: { token: string }) {
 
             {/* Question x model table */}
             <div className="flex flex-col gap-3">
-              <p className="font-medium text-cloud text-[16px] tracking-[0.28px] uppercase" style={wdth}>By question</p>
-              <div className="bg-white border border-[rgba(74,78,85,0.12)] rounded-[8px] overflow-x-auto">
+              <p className={subhead} style={wdth}>By question</p>
+              <div className="bg-cloud border border-rust rounded-lg overflow-x-auto">
                 <div className="min-w-[640px]">
-                  <div className="flex items-center px-[16px] py-[10px] border border-[rgba(74,78,85,0.15)]">
+                  <div className="flex items-center px-4 py-3 border-b border-rust">
                     <p className={`${th} flex-1`} style={wdth}>Question</p>
                     {data.tracker.assistants.map((k) => (
                       <p key={k} className={`${th} w-[120px] shrink-0`} style={wdth}>{modelByKey(k)?.name.split(' ')[0] ?? k}</p>
                     ))}
                   </div>
-                  {data.questions.map((q, idx) => (
-                    <div
-                      key={q.id}
-                      className={`flex items-center px-[16px] py-[10px] border border-[rgba(74,78,85,0.08)] ${
-                        idx % 2 ? 'bg-[rgba(237,238,241,0.5)]' : 'bg-white'
-                      }`}
-                    >
-                      <p className="flex-1 font-medium leading-[20px] text-ink text-[14px] pr-4" style={wdth}>{q.question_text}</p>
-                      {data.tracker.assistants.map((k) => {
-                        const it = derived.latestItems.find((i) => i.question_id === q.id && i.assistant === k);
-                        let dot: string = STATUS.neutral;
-                        let label = '…';
-                        if (it?.status === 'ok') {
-                          dot = it.cited ? STATUS.pass : STATUS.fail;
-                          label = it.cited ? 'Cited' : 'Not cited';
-                        } else if (it?.status === 'unavailable') label = 'Unavailable';
-                        return (
-                          <div key={k} className="w-[120px] shrink-0 flex items-center gap-[6px]">
-                            <Dot color={dot} />
-                            {it?.cited && it.matched_url ? (
-                              <a href={it.matched_url} target="_blank" rel="noreferrer" className="text-ink text-[13px] font-medium underline" style={wdth}>
-                                {label}
-                              </a>
-                            ) : (
-                              <span className="text-ink text-[13px] font-medium" style={wdth}>{label}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                  <div className="divide-y divide-rust/40">
+                    {data.questions.map((q) => (
+                      <div key={q.id} className="flex items-center px-4 py-3">
+                        <p className="flex-1 leading-[1.5] text-ink text-[14px] pr-4 font-normal" style={wdth}>{q.question_text}</p>
+                        {data.tracker.assistants.map((k) => {
+                          const it = derived.latestItems.find((i) => i.question_id === q.id && i.assistant === k);
+                          let dot: string = STATUS.neutral;
+                          let label = '…';
+                          if (it?.status === 'ok') {
+                            dot = it.cited ? STATUS.pass : STATUS.fail;
+                            label = it.cited ? 'Cited' : 'Not cited';
+                          } else if (it?.status === 'unavailable') label = 'Unavailable';
+                          return (
+                            <div key={k} className="w-[120px] shrink-0 flex items-center gap-[6px]">
+                              <Dot color={dot} />
+                              {it?.cited && it.matched_url ? (
+                                <a href={it.matched_url} target="_blank" rel="noreferrer" className="text-ink text-[13px] underline hover:text-rust" style={wdth}>
+                                  {label}
+                                </a>
+                              ) : (
+                                <span className="text-ink text-[13px]" style={wdth}>{label}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -264,23 +263,22 @@ export default function TrackerPage({ token }: { token: string }) {
             {/* Who gets cited instead */}
             {derived.topDomains.length > 0 && (
               <div className="flex flex-col gap-3">
-                <p className="font-medium text-cloud text-[16px] tracking-[0.28px] uppercase" style={wdth}>
-                  Who gets cited instead
-                </p>
-                <div className="bg-white border border-[rgba(74,78,85,0.12)] rounded-[8px] overflow-hidden">
-                  {derived.topDomains.map(([domain, n], idx) => (
-                    <div
-                      key={domain}
-                      className={`flex items-center justify-between px-[16px] py-[10px] border border-[rgba(74,78,85,0.08)] ${
-                        idx % 2 ? 'bg-[rgba(237,238,241,0.5)]' : 'bg-white'
-                      }`}
-                    >
-                      <p className="font-medium text-ink text-[14px]" style={wdth}>{domain}</p>
-                      <p className="text-slate text-[13px]" style={wdth}>{n} answer{n === 1 ? '' : 's'}</p>
-                    </div>
-                  ))}
+                <p className={subhead} style={wdth}>Who gets cited instead</p>
+                <div className="bg-cloud border border-rust rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-rust">
+                    <p className={th} style={wdth}>Site</p>
+                    <p className={th} style={wdth}>Answers</p>
+                  </div>
+                  <div className="divide-y divide-rust/40">
+                    {derived.topDomains.map(([domain, n]) => (
+                      <div key={domain} className="flex items-center justify-between px-4 py-3">
+                        <p className="text-ink text-[14px] font-normal" style={wdth}>{domain}</p>
+                        <p className="text-slate text-[14px]" style={wdth}>{n}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-cloud/70 text-[13px]" style={wdth}>
+                <p className="text-cloud/70 text-[12px]" style={wdth}>
                   Other sites the models cited for these same questions. Useful for seeing what content wins.
                 </p>
               </div>
@@ -288,44 +286,42 @@ export default function TrackerPage({ token }: { token: string }) {
 
             {/* Run history */}
             <div className="flex flex-col gap-3">
-              <p className="font-medium text-cloud text-[16px] tracking-[0.28px] uppercase" style={wdth}>Run history</p>
-              <div className="bg-white border border-[rgba(74,78,85,0.12)] rounded-[8px] overflow-x-auto">
+              <p className={subhead} style={wdth}>Run history</p>
+              <div className="bg-cloud border border-rust rounded-lg overflow-x-auto">
                 <div className="min-w-[560px]">
-                  <div className="flex items-center px-[16px] py-[10px] border border-[rgba(74,78,85,0.15)]">
+                  <div className="flex items-center px-4 py-3 border-b border-rust">
                     <p className={`${th} w-[140px] shrink-0`} style={wdth}>Date</p>
                     {data.tracker.assistants.map((k) => (
                       <p key={k} className={`${th} flex-1`} style={wdth}>{modelByKey(k)?.name.split(' ')[0] ?? k}</p>
                     ))}
                   </div>
-                  {data.runs.map((r, idx) => (
-                    <div
-                      key={r.id}
-                      className={`flex items-center px-[16px] py-[10px] border border-[rgba(74,78,85,0.08)] ${
-                        idx % 2 ? 'bg-[rgba(237,238,241,0.5)]' : 'bg-white'
-                      }`}
-                    >
-                      <p className="w-[140px] shrink-0 font-medium text-ink text-[14px]" style={wdth}>
-                        {fmtDate(r.created_at)}
-                        {r.status === 'running' ? ' (running)' : ''}
-                      </p>
-                      {data.tracker.assistants.map((k) => {
-                        const { rate } = rateFor(data.items, r.id, k);
-                        return (
-                          <p key={k} className="flex-1 text-ink text-[13px] font-medium" style={wdth}>
-                            {rate === null ? '—' : `${Math.round(rate)}%`}
-                          </p>
-                        );
-                      })}
-                    </div>
-                  ))}
+                  <div className="divide-y divide-rust/40">
+                    {data.runs.map((r) => (
+                      <div key={r.id} className="flex items-center px-4 py-3">
+                        <p className="w-[140px] shrink-0 text-ink text-[14px] font-normal" style={wdth}>
+                          {fmtDate(r.created_at)}
+                          {r.status === 'running' ? ' (running)' : ''}
+                        </p>
+                        {data.tracker.assistants.map((k) => {
+                          const { rate } = rateFor(data.items, r.id, k);
+                          return (
+                            <p key={k} className="flex-1 text-ink text-[14px]" style={wdth}>
+                              {rate === null ? '—' : `${Math.round(rate)}%`}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Controls */}
             <div className="bg-cloud border border-rust rounded-lg p-6 flex flex-col gap-4">
-              <p className="font-medium text-rust text-[14px] tracking-[0.28px] uppercase" style={wdth}>Manage this tracker</p>
+              <p className={labelCls} style={wdth}>Manage this tracker</p>
               <Segmented
+                size="secondary"
                 value={data.tracker.frequency}
                 onChange={(f) => act({ action: 'update', frequency: f })}
                 options={[

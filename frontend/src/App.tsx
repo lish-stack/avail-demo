@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import {
   Dot,
+  labelCls,
+  bodyCls,
+  sectionCls,
+  sectionTitleCls,
   Dropdown,
   EDGE_FUNCTION_URL,
   FieldLabel,
@@ -113,6 +117,7 @@ function CheckForm() {
       <div className="flex flex-col gap-3 items-start w-full">
         <FieldLabel>Question</FieldLabel>
         <Segmented
+          size="secondary"
           value={useCustom ? 'custom' : 'sample'}
           onChange={(v) => setUseCustom(v === 'custom')}
           options={[
@@ -163,43 +168,48 @@ function CheckForm() {
       )}
 
       {results && (
-        <div className="flex flex-col gap-4 w-full">
-          <p className="font-medium text-ink text-[16px] tracking-[0.28px] uppercase" style={wdth}>Results</p>
-          <div className="bg-white border border-[rgba(74,78,85,0.12)] border-solid flex flex-col overflow-hidden rounded-[8px] w-full">
-            {results.map((r, idx) => {
-              const m = modelByLabel(r.assistant);
-              const dot = r.status === 'unavailable' ? STATUS.neutral : r.cited ? STATUS.pass : STATUS.fail;
-              const label =
-                r.status === 'unavailable' ? 'Temporarily unavailable' : r.cited ? 'Cited directly' : 'Not cited directly';
-              return (
-                <div
-                  key={r.assistant}
-                  className={`flex flex-col md:flex-row md:items-center gap-2 px-[16px] py-[10px] border border-[rgba(74,78,85,0.08)] ${
-                    idx % 2 ? 'bg-[rgba(237,238,241,0.5)]' : 'bg-white'
-                  }`}
-                >
-                  <div className="md:w-[240px] shrink-0">
-                    <p className="font-medium leading-[20px] text-ink text-[14px]" style={wdth}>{m?.name ?? r.assistant}</p>
-                    <p className="text-slate text-[12px] break-all" style={wdth}>{m?.modelId}</p>
+        <div className="flex flex-col gap-3 w-full">
+          <p className={labelCls} style={wdth}>Results</p>
+          <div className="bg-cloud border border-rust rounded-lg overflow-hidden w-full">
+            <div className="hidden md:grid md:grid-cols-[1.3fr_1.1fr_1.6fr] md:gap-x-6 px-6 py-3 border-b border-rust">
+              {['Assistant', 'Result', 'Source'].map((h) => (
+                <p key={h} className={labelCls} style={wdth}>{h}</p>
+              ))}
+            </div>
+            <div className="divide-y divide-rust/40">
+              {results.map((r) => {
+                const m = modelByLabel(r.assistant);
+                const dot = r.status === 'unavailable' ? STATUS.neutral : r.cited ? STATUS.pass : STATUS.fail;
+                const label =
+                  r.status === 'unavailable' ? 'Temporarily unavailable' : r.cited ? 'Cited directly' : 'Not cited directly';
+                return (
+                  <div
+                    key={r.assistant}
+                    className="flex flex-col gap-2 px-4 md:px-6 py-4 md:grid md:grid-cols-[1.3fr_1.1fr_1.6fr] md:gap-x-6 md:items-start"
+                  >
+                    <div>
+                      <p className="font-normal leading-[1.6] text-ink text-[15px]" style={wdth}>{m?.name ?? r.assistant}</p>
+                      <p className="font-normal text-slate text-[12px] break-all" style={wdth}>{m?.modelId}</p>
+                    </div>
+                    <div className="flex items-center gap-[8px]">
+                      <Dot color={dot} />
+                      <span className="font-normal text-ink text-[14px]" style={wdth}>{label}</span>
+                    </div>
+                    <div className="min-w-0">
+                      {r.status === 'ok' && r.cited && r.matchedUrl ? (
+                        <a href={r.matchedUrl} target="_blank" rel="noreferrer" className="text-[12px] text-slate break-all underline hover:text-rust">
+                          {r.matchedUrl}
+                        </a>
+                      ) : r.status === 'ok' ? (
+                        <span className="text-slate text-[14px]" style={wdth}>
+                          {r.totalCitations ?? 0} other source{r.totalCitations === 1 ? '' : 's'} cited
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-[6px] md:w-[190px] shrink-0">
-                    <Dot color={dot} />
-                    <span className="font-medium text-ink text-[13px]" style={wdth}>{label}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {r.status === 'ok' && r.cited && r.matchedUrl ? (
-                      <a href={r.matchedUrl} target="_blank" rel="noreferrer" className="text-[12px] text-slate break-all underline">
-                        {r.matchedUrl}
-                      </a>
-                    ) : r.status === 'ok' ? (
-                      <span className="text-slate text-[13px]" style={wdth}>
-                        {r.totalCitations ?? 0} other source{r.totalCitations === 1 ? '' : 's'} cited
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -279,20 +289,14 @@ function HomePage() {
       <ModelsSection />
       <WhySection />
 
-      {/* Credibility section — exact values from Figma nodes 1:262 (desktop/tablet), 1:363 (mobile) */}
-      <section className="flex flex-col gap-4 items-start px-[24px] md:px-[128px] xl:px-[256px] py-8 w-full">
-        <p className="text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud" style={wdth}>
-          <span className="font-normal tracking-[0.32px]">This demo is </span>
-          <span className="text-rust tracking-[0.32px]">one query</span>
-          <span className="font-normal tracking-[0.32px]">. </span>
-          <span className="font-normal tracking-[0.32px]">Our pilot ran</span>
-          <span className="text-rust tracking-[0.32px]"> 480</span>
-          <span>.</span>
+      {/* "Where to start" section: same layout and type as Figma 1:262 */}
+      <section className={sectionCls}>
+        <p className={sectionTitleCls} style={wdth}>
+          Not sure where to <span className="font-medium text-rust">start</span>?
         </p>
-        <p className="text-cloud text-[15px] leading-[1.6]" style={wdth}>
-          We evaluated major conversational systems using a diverse set of 60 core animal protection
-          questions across multiple runs. This live demo uses the exact same pipeline to verify
-          real-time citations.
+        <p className={bodyCls} style={wdth}>
+          Use our open dataset of real questions people ask AI about animals as a starting point for your own list.
+          Our pilot ran 60 of them across multiple runs, 480 responses in all, using the same approach as this tool.
         </p>
         <a
           href="https://huggingface.co/datasets/considersentience/animal-welfare-veganism-query-corpus"

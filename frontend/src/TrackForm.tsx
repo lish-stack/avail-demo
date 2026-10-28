@@ -163,25 +163,42 @@ export default function TrackForm() {
             style={wdth}
           />
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-          <div className="flex flex-wrap gap-3 items-center">
-            <button type="button" className={secondaryBtn} style={wdth} onClick={() => fileRef.current?.click()}>
-              upload csv
-            </button>
-            <button type="button" className="text-[13px] text-slate underline" style={wdth} onClick={downloadTemplate}>
-              download template
-            </button>
-            <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
-          </div>
+        <div className="flex items-center justify-between gap-3 w-full">
+          {/* Text-style CTA with icon (not a button) so it ranks below Start tracking */}
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex items-center gap-2 text-ink hover:text-rust text-[12px] md:text-[14px] uppercase tracking-[0.28px] transition-colors cursor-pointer"
+            style={wdth}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-rust shrink-0" aria-hidden="true">
+              <path
+                d="M8 11V3M8 3L5 6M8 3l3 3M3 12v1h10v-1"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            upload csv
+          </button>
+          <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
           <p className={`text-[12px] ${count > MAX_QUESTIONS ? 'text-[#a85c4a] font-medium' : 'text-slate/55'}`} style={wdth}>
             {count} / {MAX_QUESTIONS}
           </p>
         </div>
+        <p className="text-[12px] text-slate/55" style={wdth}>
+          <button type="button" className="underline hover:text-rust" onClick={downloadTemplate}>
+            Download this template
+          </button>
+          , fill it out, and upload it above for best results.
+        </p>
       </div>
 
       <div className="flex flex-col gap-3 items-start w-full">
         <FieldLabel>How often</FieldLabel>
         <Segmented
+          size="secondary"
           value={frequency}
           onChange={setFrequency}
           options={[

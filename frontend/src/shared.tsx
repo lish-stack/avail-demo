@@ -110,27 +110,45 @@ export function Dropdown({
   );
 }
 
-// ---------- Pill toggle (same style as "sample questions / write your own") ----------
+// ---------- Type tokens (see AVAIL_TYPE_SCALE.md) ----------
+
+// Field labels and table headers: 14 / medium / rust / caps (Figma 1:561)
+export const labelCls = 'font-medium text-rust text-[14px] tracking-[0.28px] uppercase';
+// Section titles: 28 (20 mobile) regular; accent words medium + rust (Figma 1:263)
+export const sectionTitleCls =
+  'text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud font-normal';
+// Body copy: 15 regular, 1.6 line height (Figma 1:264)
+export const bodyCls = 'text-cloud text-[15px] leading-[1.6] font-normal';
+// Bordered surfaces: cloud fill + rust border, like the input panel
+export const sectionCls = 'flex flex-col gap-4 items-start px-[24px] md:px-[128px] xl:px-[256px] py-8 w-full';
+
+export const surface = 'bg-cloud border border-rust rounded-lg';
+
+// ---------- Pill toggle ----------
+// "primary": top-level mode switch. "secondary": sub-options inside a form (smaller, so the hierarchy reads).
 
 export function Segmented<T extends string>({
   value,
   options,
   onChange,
+  size = 'primary',
 }: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
+  size?: 'primary' | 'secondary';
 }) {
+  const sm = size === 'secondary';
   return (
-    <div className="border border-ink/55 rounded-full flex items-center p-[6px]">
+    <div className={`border border-ink/55 rounded-full flex items-center ${sm ? 'p-[4px]' : 'p-[6px]'}`}>
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`rounded-full px-3 py-2 text-[12px] uppercase transition-colors ${
-            value === o.value ? 'bg-ink text-white font-medium' : 'text-ink font-normal'
-          }`}
+          className={`rounded-full uppercase whitespace-nowrap transition-colors ${
+            sm ? 'px-[10px] py-[6px] text-[11px]' : 'px-3 py-[10px] text-[12px] md:px-4 md:text-[14px]'
+          } ${value === o.value ? 'bg-ink text-white font-medium' : 'text-ink font-normal'}`}
           style={wdth}
         >
           {o.label}
@@ -152,7 +170,7 @@ export const secondaryBtn =
 
 export function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="font-medium text-rust text-[14px] tracking-[0.28px] uppercase" style={wdth}>
+    <p className={labelCls} style={wdth}>
       {children}
     </p>
   );
@@ -248,89 +266,73 @@ export function SiteFooter() {
   );
 }
 
-// ---------- Design-system pieces (CS Solutions Design System) ----------
+// ---------- Cards, accordion, tables (AVAIL style: cloud + rust borders, caps labels) ----------
 
-// Card — Finding/Callout (8:257)
+// Stat card
 export function FindingCard({ stat, label, quote }: { stat: string; label: string; quote: string }) {
   return (
-    <div className="bg-white border border-[rgba(74,78,85,0.12)] border-solid flex flex-col gap-[16px] items-start p-[24px] rounded-[8px] w-full">
-      <div className="flex flex-col gap-[8px] items-start w-full">
-        <p className="font-semibold leading-[44px] text-rust text-[36px] w-full" style={wdth}>{stat}</p>
-        <p className="font-medium leading-[24px] text-slate text-[15px] w-full" style={wdth}>{label}</p>
+    <div className={`${surface} flex flex-col gap-4 p-6 w-full`}>
+      <div className="flex flex-col gap-2 w-full">
+        <p className="font-medium leading-[1.2] text-rust text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px]" style={wdth}>
+          {stat}
+        </p>
+        <p className="font-normal leading-[1.6] text-ink text-[15px]" style={wdth}>{label}</p>
       </div>
-      <div className="bg-[rgba(74,78,85,0.15)] h-px w-full" />
-      <div className="flex gap-[12px] items-start w-full">
-        <div className="bg-[rgba(201,124,46,0.5)] h-[40px] rounded-[2px] shrink-0 w-[3px]" />
-        <p className="flex-1 font-normal leading-[20px] min-w-px text-slate text-[13px]" style={wdth}>{quote}</p>
+      <div className="bg-rust/40 h-px w-full" />
+      <div className="flex gap-3 items-stretch w-full">
+        <div className="bg-rust/60 rounded-[2px] shrink-0 w-[3px]" />
+        <p className="flex-1 font-normal leading-[1.6] min-w-0 text-slate text-[14px]" style={wdth}>{quote}</p>
       </div>
     </div>
   );
 }
 
-// Accordion row (8:271 collapsed / 8:275 expanded)
+// Accordion row
 export function AccordionRow({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    // Design-system accordion is tinted-on-light; on AVAIL's dark page it sits on a cloud card (same as the input panel)
-    <div className="bg-cloud flex flex-col items-start rounded-[8px] w-full">
+    <div className={`${surface} flex flex-col w-full`}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex items-center justify-between gap-4 px-[16px] py-[12px] w-full text-left"
+        className="flex items-center justify-between gap-4 px-4 md:px-6 py-4 w-full text-left"
       >
-        <span className="font-medium leading-[24px] text-ink text-[15px]" style={wdth}>{title}</span>
-        <span className={`shrink-0 text-rust ${open ? 'text-[16px]' : 'text-[24px]'}`} style={wdth}>
-          {open ? '—' : '+'}
+        <span className="font-normal text-ink text-[14px] md:text-[16px] tracking-[0.28px] md:tracking-[0.32px] uppercase" style={wdth}>
+          {title}
         </span>
+        <span className="shrink-0 text-rust text-[24px] leading-none font-normal" style={wdth}>{open ? '—' : '+'}</span>
       </button>
       {open && (
-        <div className="flex flex-col gap-3 items-start p-[16px] pt-0 w-full">
-          <div className="font-normal leading-[20px] text-slate text-[13px] w-full flex flex-col gap-3" style={wdth}>
-            {children}
-          </div>
+        <div className="border-t border-rust/40 px-4 md:px-6 py-4 flex flex-col gap-3 text-slate text-[14px] leading-[1.6] font-normal" style={wdth}>
+          {children}
         </div>
       )}
     </div>
   );
 }
 
-// Leaderboard-style table of exactly which models are queried.
+// Models table. One shared grid template keeps header and rows aligned.
+const MODELS_GRID = 'md:grid md:grid-cols-[1.1fr_1.1fr_1fr_2fr] md:gap-x-8';
+
 export function ModelsTable() {
   return (
-    <div className="bg-white border border-[rgba(74,78,85,0.12)] border-solid flex flex-col overflow-hidden rounded-[8px] w-full">
-      <div className="hidden md:flex items-center px-[16px] py-[10px] border border-[rgba(74,78,85,0.15)]">
-        {['Assistant', 'Exact model ID', 'Served by', 'How it finds sources'].map((h, i) => (
-          <p
-            key={h}
-            className={`font-semibold leading-[16px] text-slate text-[11px] uppercase ${
-              ['w-[190px]', 'w-[260px]', 'w-[130px]', 'flex-1'][i]
-            } shrink-0 ${i === 3 ? 'shrink' : ''}`}
-            style={wdth}
-          >
-            {h}
-          </p>
+    <div className={`${surface} overflow-hidden w-full`}>
+      <div className={`hidden ${MODELS_GRID} px-6 py-3 border-b border-rust`}>
+        {['Assistant', 'Exact model ID', 'Served by', 'How it finds sources'].map((h) => (
+          <p key={h} className={labelCls} style={wdth}>{h}</p>
         ))}
       </div>
-      {MODELS.map((m, i) => (
-        <div
-          key={m.key}
-          className={`flex flex-col md:flex-row md:items-center gap-1 md:gap-0 px-[16px] py-[10px] border border-[rgba(74,78,85,0.08)] ${
-            i % 2 ? 'bg-[rgba(237,238,241,0.5)]' : 'bg-white'
-          }`}
-        >
-          <p className="font-medium leading-[20px] text-ink text-[14px] md:w-[190px] shrink-0 md:pr-4" style={wdth}>
-            {m.name}
-          </p>
-          <p className="font-normal leading-[20px] text-ink text-[13px] md:w-[260px] shrink-0 md:pr-4 break-all" style={wdth}>
-            {m.modelId}
-          </p>
-          <p className="font-normal leading-[20px] text-slate text-[13px] md:w-[130px] shrink-0 md:pr-4" style={wdth}>
-            {m.provider}
-          </p>
-          <p className="font-normal leading-[20px] text-slate text-[13px] flex-1" style={wdth}>{m.how}</p>
-        </div>
-      ))}
+      <div className="divide-y divide-rust/40">
+        {MODELS.map((m) => (
+          <div key={m.key} className={`flex flex-col gap-1 px-4 md:px-6 py-4 ${MODELS_GRID} md:items-start`}>
+            <p className="font-normal leading-[1.6] text-ink text-[15px]" style={wdth}>{m.name}</p>
+            <p className="font-normal leading-[1.6] text-slate text-[14px] break-all" style={wdth}>{m.modelId}</p>
+            <p className="font-normal leading-[1.6] text-slate text-[14px]" style={wdth}>{m.provider}</p>
+            <p className="font-normal leading-[1.6] text-slate text-[14px]" style={wdth}>{m.how}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
