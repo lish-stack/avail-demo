@@ -12,10 +12,11 @@ Rule of thumb: **regular is the default; medium is only for emphasis words and s
 | Sub-head (dark page) | 20 | Regular | Caps, .4 | cloud | Tracker page: "By question", "Run history" | One step below section title |
 | Stat number | 28 | Medium | none, .56 | rust | Percentages in finding cards and tracker cards | The number is the point; medium + rust makes it scan first |
 | Panel intro | 16 | Medium | none | slate | Sentence under the mode toggle | |
+| Form fields (dropdowns, inputs, text areas) | 15 | Regular | none | ink | Everything the user types or picks | One size across every form state |
 | Body | 15 | Regular, lh 1.6 | none | cloud (dark) / ink (cards) | Paragraphs, table cell primary text | Comfortable reading size |
 | Field label / table column header | 14 | Medium | Caps, .28 | rust | "Organization", "Questions", column headers, card labels | Same style everywhere a label appears, so tables and forms read as one system |
 | Secondary text | 14 | Regular | none | ink / slate | Table cells, status text | |
-| Upload CTA (text link) | 14 / 12 | Regular | Caps, .28 | ink, rust icon | "Upload CSV" | Smaller than buttons so it ranks below Run Check / Start tracking |
+| Small button | 11 | Regular | Caps, .22 | ink on cloud, rust icon | "Upload CSV" | Same scale as the secondary toggle, so it ranks below Run check / Start tracking |
 | Primary toggle (mode) | 12 | Active Medium, inactive Regular | Caps | white on ink / ink | Check one question / Track a list | Top level choice |
 | Secondary toggle | 11 | Active Medium, inactive Regular | Caps | white on slate gray / ink | Sample / write your own, Once / Weekly / Monthly | Smaller and tighter, so it clearly sits under the primary toggle |
 | Buttons | 16 / 14 | Regular | Caps, .32 / .28 | white on rust / ink on cloud | Run check, Start tracking, See the open dataset | Rounded pills |

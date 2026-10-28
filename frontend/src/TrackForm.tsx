@@ -8,7 +8,7 @@ import {
   TRACKER_URL,
   apiOrgName,
   primaryBtn,
-  secondaryBtn,
+  smallBtn,
   wdth,
 } from './shared';
 import { MODELS } from './models';
@@ -117,7 +117,7 @@ export default function TrackForm() {
   }
 
   const inputCls =
-    'bg-white border border-solid border-slate/55 rounded h-[45px] w-full px-4 text-[16px] outline-none focus:border-[#c97c2e]';
+    'bg-white border border-solid border-slate/55 rounded h-[45px] w-full px-4 text-[15px] outline-none focus:border-[#c97c2e]';
 
   return (
     <>
@@ -168,10 +168,10 @@ export default function TrackForm() {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-2 text-ink hover:text-rust text-[12px] md:text-[14px] uppercase tracking-[0.28px] transition-colors cursor-pointer"
+            className={smallBtn}
             style={wdth}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-rust shrink-0" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-rust group-hover:text-cloud shrink-0" aria-hidden="true">
               <path
                 d="M8 11V3M8 3L5 6M8 3l3 3M3 12v1h10v-1"
                 stroke="currentColor"
@@ -232,8 +232,9 @@ export default function TrackForm() {
       )}
 
       <p className="text-[12px] text-slate/55 text-center" style={wdth}>
-        Free during the research preview. Up to {MAX_QUESTIONS} questions per list. You’ll get a private link to your
-        results; anyone who has it can view them.
+        Free during the research preview. Up to {MAX_QUESTIONS} questions per list.
+        <br />
+        You’ll get a private link to your results; anyone who has it can view them.
       </p>
     </>
   );

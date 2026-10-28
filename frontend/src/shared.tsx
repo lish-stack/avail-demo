@@ -76,7 +76,7 @@ export function Dropdown({
         }`}
       >
         <p
-          className="flex-1 font-normal text-[#1a1c1e] text-[16px] text-ellipsis text-left overflow-hidden whitespace-nowrap"
+          className="flex-1 font-normal text-[#1a1c1e] text-[15px] text-ellipsis text-left overflow-hidden whitespace-nowrap"
           style={wdth}
         >
           {value}
@@ -99,7 +99,7 @@ export function Dropdown({
               }}
               className="bg-white hover:bg-cloud flex flex-col min-h-[52px] items-start justify-center px-3 py-2 w-full text-left"
             >
-              <p className="font-normal text-[16px] text-black" style={wdth}>
+              <p className="font-normal text-[15px] text-black" style={wdth}>
                 {opt}
               </p>
             </button>
@@ -167,6 +167,10 @@ export const primaryBtn = (disabled: boolean) =>
 
 export const secondaryBtn =
   'whitespace-nowrap bg-cloud border border-slate rounded-full px-[14px] py-[10px] md:px-4 md:py-3 text-[14px] md:text-[16px] uppercase tracking-[0.28px] md:tracking-[0.32px] text-ink hover:bg-[#4a4e55] hover:text-cloud transition-colors cursor-pointer';
+
+// Small pill button (same scale as the secondary toggle) for in-form actions like "upload csv"
+export const smallBtn =
+  'group inline-flex items-center gap-2 whitespace-nowrap bg-cloud border border-slate rounded-full px-3 py-[7px] text-[11px] uppercase tracking-[0.22px] text-ink hover:bg-slate hover:text-cloud transition-colors cursor-pointer';
 
 export function FieldLabel({ children }: { children: ReactNode }) {
   return (
