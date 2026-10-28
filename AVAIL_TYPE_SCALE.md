@@ -16,8 +16,8 @@ Rule of thumb: **regular is the default; medium is only for emphasis words and s
 | Field label / table column header | 14 | Medium | Caps, .28 | rust | "Organization", "Questions", column headers, card labels | Same style everywhere a label appears, so tables and forms read as one system |
 | Secondary text | 14 | Regular | none | ink / slate | Table cells, status text | |
 | Upload CTA (text link) | 14 / 12 | Regular | Caps, .28 | ink, rust icon | "Upload CSV" | Smaller than buttons so it ranks below Run Check / Start tracking |
-| Primary toggle (mode) | 14 / 12 | Active Medium, inactive Regular | Caps | white on ink / ink | Check one question / Track a list | Top level choice |
-| Secondary toggle | 11 | Active Medium, inactive Regular | Caps | white on ink / ink | Sample / write your own, Once / Weekly / Monthly | Smaller and tighter, so it clearly sits under the primary toggle |
+| Primary toggle (mode) | 12 | Active Medium, inactive Regular | Caps | white on ink / ink | Check one question / Track a list | Top level choice |
+| Secondary toggle | 11 | Active Medium, inactive Regular | Caps | white on slate gray / ink | Sample / write your own, Once / Weekly / Monthly | Smaller and tighter, so it clearly sits under the primary toggle |
 | Buttons | 16 / 14 | Regular | Caps, .32 / .28 | white on rust / ink on cloud | Run check, Start tracking, See the open dataset | Rounded pills |
 | Notes, captions, model IDs | 12 | Regular | none | slate 55% (emphasis Medium) | Notes, counters, helper text, model IDs | Smallest tier |
 | Footer | 14 | Regular | none | cloud | Copyright line | |

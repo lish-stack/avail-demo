@@ -140,15 +140,15 @@ export function Segmented<T extends string>({
 }) {
   const sm = size === 'secondary';
   return (
-    <div className={`border border-ink/55 rounded-full flex items-center ${sm ? 'p-[4px]' : 'p-[6px]'}`}>
+    <div className={`border ${sm ? 'border-slate/45' : 'border-ink/55'} rounded-full flex items-center ${sm ? 'p-[4px]' : 'p-[6px]'}`}>
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={`rounded-full uppercase whitespace-nowrap transition-colors ${
-            sm ? 'px-[10px] py-[6px] text-[11px]' : 'px-3 py-[10px] text-[12px] md:px-4 md:text-[14px]'
-          } ${value === o.value ? 'bg-ink text-white font-medium' : 'text-ink font-normal'}`}
+            sm ? 'px-[10px] py-[6px] text-[11px]' : 'px-3 py-[10px] text-[12px]'
+          } ${value === o.value ? `${sm ? 'bg-slate' : 'bg-ink'} text-white font-medium` : 'text-ink font-normal'}`}
           style={wdth}
         >
           {o.label}
@@ -269,20 +269,13 @@ export function SiteFooter() {
 // ---------- Cards, accordion, tables (AVAIL style: cloud + rust borders, caps labels) ----------
 
 // Stat card
-export function FindingCard({ stat, label, quote }: { stat: string; label: string; quote: string }) {
+export function FindingCard({ stat, label }: { stat: string; label: string }) {
   return (
-    <div className={`${surface} flex flex-col gap-4 p-6 w-full`}>
-      <div className="flex flex-col gap-2 w-full">
-        <p className="font-medium leading-[1.2] text-rust text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px]" style={wdth}>
-          {stat}
-        </p>
-        <p className="font-normal leading-[1.6] text-ink text-[15px]" style={wdth}>{label}</p>
-      </div>
-      <div className="bg-rust/40 h-px w-full" />
-      <div className="flex gap-3 items-stretch w-full">
-        <div className="bg-rust/60 rounded-[2px] shrink-0 w-[3px]" />
-        <p className="flex-1 font-normal leading-[1.6] min-w-0 text-slate text-[14px]" style={wdth}>{quote}</p>
-      </div>
+    <div className={`${surface} flex flex-col gap-2 p-6 w-full`}>
+      <p className="font-medium leading-[1.2] text-rust text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px]" style={wdth}>
+        {stat}
+      </p>
+      <p className="font-normal leading-[1.6] text-ink text-[15px]" style={wdth}>{label}</p>
     </div>
   );
 }
@@ -298,7 +291,7 @@ export function AccordionRow({ title, children }: { title: string; children: Rea
         aria-expanded={open}
         className="flex items-center justify-between gap-4 px-4 md:px-6 py-4 w-full text-left"
       >
-        <span className="font-normal text-ink text-[14px] md:text-[16px] tracking-[0.28px] md:tracking-[0.32px] uppercase" style={wdth}>
+        <span className="font-normal text-ink text-[15px] md:text-[16px]" style={wdth}>
           {title}
         </span>
         <span className="shrink-0 text-rust text-[24px] leading-none font-normal" style={wdth}>{open ? '—' : '+'}</span>

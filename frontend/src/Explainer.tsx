@@ -34,24 +34,17 @@ export function WhySection() {
       <p className={bodyCls} style={wdth}>
         More people now ask an AI assistant before they open a search engine. When an assistant answers a question
         about animals, the sources it cites decide whose expertise the reader sees, and whose gets skipped. Most
-        organizations have never checked where they stand. In our pilot of 480 responses, here is what that looked like:
+        organizations have never checked where they stand. We tested 480 AI answers to real questions about animals. Here is what we found:
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
         <FindingCard
-          stat="62.5–100%"
-          label="of the time an assistant cited an organization’s own site when asked about it by name"
-          quote="Being found when someone searches your name is table stakes."
+          stat="At least 6 in 10"
+          label="answers linked to an organization’s own website when the question named that organization"
         />
         <FindingCard
-          stat="0–7.5%"
-          label="citation rate on general questions that never name an organization"
-          quote="The harder question: does your expertise surface when someone asks about your topic?"
-        />
-        <FindingCard
-          stat="480"
-          label="responses analyzed: 60 real questions, 4 AI assistants, 2 runs"
-          quote="Questions come from our open corpus of real human questions about animals."
+          stat="Fewer than 1 in 10"
+          label="answers linked to it when the question was a general one about its topic and did not name any organization"
         />
       </div>
 
