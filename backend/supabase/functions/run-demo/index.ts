@@ -2,11 +2,13 @@
 // Live Tier 1 citation-check demo backend for demoavail.considersentience.ai
 // Deploy: supabase functions deploy run-demo
 // Secrets needed (set via `supabase secrets set`):
-//   ANTHROPIC_API_KEY, PERPLEXITY_API_KEY, OPENAI_API_KEY
+//   ANTHROPIC_API_KEY, PERPLEXITY_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
 // Uses the Supabase service role automatically via env (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+type CallResult = { citations: string[]; responseText: string };
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -132,69 +134,53 @@ async function callOpenAI(question: string): Promise<{ citations: string[]; resp
   return { citations, responseText };
 }
 
-// --- Open-weight model support (Together AI + Tavily search) ---
-// Open-weight models don't have native web-search/citation like the four
-// commercial assistants above, so we build the loop ourselves: search first
-// (Tavily), hand the model numbered sources, ask which numbers it actually
-// used, then map those back to real URLs. Safer than letting an open model
-// generate URL strings freely, which risks hallucinated citations.
+// Google Gemini with Google Search grounding. Citations come back as
+// vertexaisearch redirect links, so resolve each to its real page before matching.
+// Gemini often returns transient 503/429 "high demand" errors, so retry with backoff.
+const GEMINI_MODEL = "gemini-3.7-flash";
 
-async function searchTavily(question: string): Promise<{ title: string; url: string; content: string }[]> {
-  const res = await fetch("https://api.tavily.com/search", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      api_key: Deno.env.get("TAVILY_API_KEY"),
-      query: question,
-      max_results: 6,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Tavily error: ${JSON.stringify(data)}`);
-  return (data.results || []).map((r: any) => ({ title: r.title, url: r.url, content: r.content }));
+async function resolveRedirect(uri: string, title?: string): Promise<string> {
+  if (!uri.includes("vertexaisearch.cloud.google.com")) return uri;
+  for (const method of ["HEAD", "GET"]) {
+    try {
+      const res = await fetch(uri, { method, redirect: "follow", signal: AbortSignal.timeout(5000) });
+      if (res.url && !res.url.includes("vertexaisearch.cloud.google.com")) return res.url;
+    } catch (_e) { /* try next method */ }
+  }
+  // Fallback: the grounding chunk title is normally the source's domain
+  if (title && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(title)) return `https://${title}/`;
+  return uri;
 }
 
-async function callOpenModel(question: string): Promise<{ citations: string[]; responseText: string }> {
-  const searchResults = await searchTavily(question);
-
-  const sourceList = searchResults
-    .map((r, i) => `[${i + 1}] ${r.title}\n${r.content.slice(0, 400)}\nURL: ${r.url}`)
-    .join("\n\n");
-
-  const prompt = `Answer the question using ONLY the sources below. After your answer, on a new line, write "SOURCES USED:" followed by a comma-separated list of the source numbers you actually drew on (e.g. "SOURCES USED: 1, 3"). If none of the sources are relevant, write "SOURCES USED: none".
-
-Sources:
-${sourceList}
-
-Question: ${question}`;
-
-  const res = await fetch("https://api.together.xyz/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${Deno.env.get("TOGETHER_API_KEY")}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 600,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Together AI error: ${JSON.stringify(data)}`);
-
-  const responseText: string = data.choices?.[0]?.message?.content || "";
-
-  // Parse "SOURCES USED: 1, 3" out of the response
-  const match = responseText.match(/SOURCES USED:\s*(.+)/i);
-  let citations: string[] = [];
-  if (match && !/none/i.test(match[1])) {
-    const indices = match[1].split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n));
-    citations = indices
-      .map((i) => searchResults[i - 1]?.url)
-      .filter((url): url is string => Boolean(url));
+async function callGemini(question: string): Promise<CallResult> {
+  let data: any;
+  let lastErr = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": Deno.env.get("GEMINI_API_KEY")! },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: question }] }],
+          tools: [{ google_search: {} }],
+        }),
+      },
+    );
+    data = await res.json();
+    if (res.ok) { lastErr = ""; break; }
+    lastErr = `Gemini error ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
+    if (![429, 500, 503].includes(res.status)) break;
+    await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
   }
+  if (lastErr) throw new Error(lastErr);
 
+  const candidate = (data.candidates || [])[0];
+  const responseText = (candidate?.content?.parts || []).map((p: any) => p.text || "").join("\n");
+  const chunks = candidate?.groundingMetadata?.groundingChunks || [];
+  const citations = (await Promise.all(
+    chunks.filter((c: any) => c.web?.uri).map((c: any) => resolveRedirect(c.web.uri, c.web.title)),
+  )) as string[];
   return { citations, responseText };
 }
 
@@ -243,11 +229,11 @@ serve(async (req: Request) => {
     await supabase.from("demo_runs").insert({ org_name: orgName, question_text: question });
 
     // Call all 3 assistants in parallel, independently — one failing shouldn't break the others
-    const [claudeResult, perplexityResult, openaiResult, openModelResult] = await Promise.allSettled([
+    const [claudeResult, perplexityResult, openaiResult, geminiResult] = await Promise.allSettled([
       callClaude(question),
       callPerplexity(question),
       callOpenAI(question),
-      callOpenModel(question),
+      callGemini(question),
     ]);
 
     function formatResult(label: string, result: PromiseSettledResult<{ citations: string[]; responseText: string }>) {
@@ -268,7 +254,7 @@ serve(async (req: Request) => {
       formatResult("Claude", claudeResult),
       formatResult("Perplexity", perplexityResult),
       formatResult("ChatGPT", openaiResult),
-      formatResult("Llama 3.3 (open-weight)", openModelResult),
+      formatResult("Gemini", geminiResult),
     ];
 
     return new Response(JSON.stringify({ orgName, question, results }), {
