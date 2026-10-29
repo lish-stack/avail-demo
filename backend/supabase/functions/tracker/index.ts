@@ -41,6 +41,24 @@ function cleanDomain(raw: string): string {
   return raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
 }
 
+// Shared validation for create + update. Returns an error string or the cleaned list.
+function cleanQuestions(raw: unknown): { error: string } | { questions: string[] } {
+  const seen = new Set<string>();
+  const questions: string[] = [];
+  for (const q of Array.isArray(raw) ? raw : []) {
+    const t = String(q).trim().replace(/\s+/g, " ");
+    if (!t || seen.has(t.toLowerCase())) continue;
+    if (t.length > 300) return { error: "Each question must be under 300 characters." };
+    seen.add(t.toLowerCase());
+    questions.push(t);
+  }
+  if (questions.length === 0) return { error: "Add at least one question." };
+  if (questions.length > MAX_QUESTIONS) {
+    return { error: `Lists are limited to ${MAX_QUESTIONS} questions in this free demo.` };
+  }
+  return { questions };
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
@@ -142,7 +160,7 @@ serve(async (req: Request) => {
     if (body.action === "get") {
       const [{ data: questions }, { data: runs }] = await Promise.all([
         supabase.from("tracker_questions").select("id, position, question_text")
-          .eq("tracker_id", tracker.id).order("position"),
+          .eq("tracker_id", tracker.id).eq("removed", false).order("position"),
         supabase.from("tracker_runs").select("id, run_type, status, created_at, completed_at")
           .eq("tracker_id", tracker.id).order("created_at", { ascending: false }).limit(26),
       ]);
@@ -172,21 +190,93 @@ serve(async (req: Request) => {
       });
     }
 
-    // ---------- UPDATE (pause/resume, change frequency) ----------
+    // ---------- UPDATE (pause/resume, change frequency, edit question list) ----------
     if (body.action === "update") {
       const patch: Record<string, unknown> = {};
       if (typeof body.active === "boolean") {
         patch.active = body.active;
         if (body.active && !tracker.next_run_at) patch.next_run_at = nextRunAt(tracker.frequency);
       }
-      if (["once", "weekly", "monthly"].includes(body.frequency)) {
+      if (["once", "weekly", "monthly"].includes(body.frequency) && body.frequency !== tracker.frequency) {
         patch.frequency = body.frequency;
         patch.next_run_at = nextRunAt(body.frequency);
       }
-      if (Object.keys(patch).length === 0) return json({ error: "Nothing to update." }, 400);
-      const { error } = await supabase.from("trackers").update(patch).eq("id", tracker.id);
-      if (error) throw new Error(error.message);
-      return json({ ok: true });
+
+      let started = false;
+      let skippedRun = false;
+      if (Array.isArray(body.questions)) {
+        const cleaned = cleanQuestions(body.questions);
+        if ("error" in cleaned) return json({ error: cleaned.error }, 400);
+
+        const { data: existing } = await supabase.from("tracker_questions")
+          .select("id, question_text, removed").eq("tracker_id", tracker.id);
+        const byText = new Map((existing ?? []).map((r) => [r.question_text.toLowerCase(), r]));
+        const keep = new Set<string>();
+        let added = 0;
+        let removedCount = 0;
+
+        for (let position = 0; position < cleaned.questions.length; position++) {
+          const t = cleaned.questions[position];
+          const row = byText.get(t.toLowerCase());
+          if (row) {
+            keep.add(row.id);
+            if (row.removed) added++;
+            await supabase.from("tracker_questions").update({ position, removed: false }).eq("id", row.id);
+          } else {
+            const { error } = await supabase.from("tracker_questions")
+              .insert({ tracker_id: tracker.id, position, question_text: t });
+            if (error) throw new Error(error.message);
+            added++;
+          }
+        }
+        // Removed questions are kept (hidden) so past runs stay intact
+        for (const r of existing ?? []) {
+          if (!keep.has(r.id) && !r.removed) {
+            removedCount++;
+            await supabase.from("tracker_questions").update({ removed: true }).eq("id", r.id);
+          }
+        }
+
+        // New questions -> start a fresh run of the whole list, unless one is already running
+        // or this tracker has already had 4 runs in the last 24h (cost guard).
+        if (added > 0) {
+          const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+          const [{ count: running }, { count: recent }] = await Promise.all([
+            supabase.from("tracker_runs").select("*", { count: "exact", head: true })
+              .eq("tracker_id", tracker.id).eq("status", "running"),
+            supabase.from("tracker_runs").select("*", { count: "exact", head: true })
+              .eq("tracker_id", tracker.id).gte("created_at", since),
+          ]);
+          if ((running ?? 0) > 0 || (recent ?? 0) >= 4) {
+            skippedRun = true;
+          } else {
+            const { data: run, error: rErr } = await supabase.from("tracker_runs")
+              .insert({ tracker_id: tracker.id, run_type: "scheduled" }).select().single();
+            if (rErr) throw new Error(rErr.message);
+            const { data: qs } = await supabase.from("tracker_questions").select("id")
+              .eq("tracker_id", tracker.id).eq("removed", false);
+            const items = (qs ?? []).flatMap((q) =>
+              (tracker.assistants as string[]).map((assistant) => ({
+                run_id: run.id, tracker_id: tracker.id, question_id: q.id, assistant,
+              })));
+            const { error: iErr } = await supabase.from("run_items").insert(items);
+            if (iErr) throw new Error(iErr.message);
+            started = true;
+          }
+        }
+        if (added === 0 && removedCount === 0 && Object.keys(patch).length === 0) {
+          return json({ ok: true, started, skippedRun });
+        }
+      }
+
+      if (Object.keys(patch).length === 0 && !Array.isArray(body.questions)) {
+        return json({ error: "Nothing to update." }, 400);
+      }
+      if (Object.keys(patch).length > 0) {
+        const { error } = await supabase.from("trackers").update(patch).eq("id", tracker.id);
+        if (error) throw new Error(error.message);
+      }
+      return json({ ok: true, started, skippedRun });
     }
 
     // ---------- DELETE ----------

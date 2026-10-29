@@ -42,7 +42,7 @@ serve(async (req: Request) => {
       .lte("next_run_at", new Date().toISOString()).limit(5);
 
     for (const t of due ?? []) {
-      const { data: qs } = await supabase.from("tracker_questions").select("id").eq("tracker_id", t.id);
+      const { data: qs } = await supabase.from("tracker_questions").select("id").eq("tracker_id", t.id).eq("removed", false);
       // Advance first so a failure below can't cause a double-schedule
       await supabase.from("trackers").update({ next_run_at: nextRunAt(t.frequency) }).eq("id", t.id);
       if (!qs?.length) continue;

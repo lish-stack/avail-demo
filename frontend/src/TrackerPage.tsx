@@ -11,9 +11,13 @@ import {
   Wordmark,
   primaryBtn,
   secondaryBtn,
+  smallBtn,
+  sectionTitleCls,
+  FieldLabel,
   wdth,
 } from './shared';
 import { modelByKey } from './models';
+import QuestionsField, { MAX_QUESTIONS } from './QuestionsField';
 
 type Item = {
   run_id: string;
@@ -68,6 +72,12 @@ export default function TrackerPage({ token }: { token: string }) {
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [tab, setTab] = useState<'report' | 'manage'>('report');
+  const [draftText, setDraftText] = useState('');
+  const [draftFreq, setDraftFreq] = useState<'once' | 'weekly' | 'monthly'>('weekly');
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -79,6 +89,12 @@ export default function TrackerPage({ token }: { token: string }) {
   }, [token]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!data || dirty) return;
+    setDraftText(data.questions.map((q) => q.question_text).join('\n'));
+    setDraftFreq(data.tracker.frequency);
+  }, [data, dirty]);
 
   const latest = data?.runs[0];
   const running = latest?.status === 'running';
@@ -112,6 +128,29 @@ export default function TrackerPage({ token }: { token: string }) {
     } catch (e) {
       setError((e as Error).message);
     }
+  }
+
+  async function save() {
+    if (!data) return;
+    setSaving(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const lines = draftText.split('\n').map((l) => l.trim()).filter(Boolean);
+      const res = await call({ token, action: 'update', frequency: draftFreq, questions: lines });
+      setDirty(false);
+      await load();
+      setNotice(
+        res.started
+          ? 'Saved. We’re checking your updated list now. Switch to the report to watch results come in.'
+          : res.skippedRun
+            ? 'Saved. Your list will be checked on the next scheduled run.'
+            : 'Saved.',
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    }
+    setSaving(false);
   }
 
   async function del() {
@@ -148,29 +187,39 @@ export default function TrackerPage({ token }: { token: string }) {
         {data && latest && derived && (
           <div className="flex flex-col gap-6 w-full max-w-[980px] mx-auto">
             {/* Title */}
-            <div className="flex flex-col gap-2">
-              <p className="text-[20px] md:text-[28px] tracking-[0.4px] md:tracking-[0.56px] uppercase text-cloud" style={wdth}>
-                <span className="font-medium text-rust">{data.tracker.orgName}</span>
-              </p>
-              <p className="text-cloud text-[15px]" style={wdth}>
-                {data.questions.length} questions ·{' '}
-                {data.tracker.frequency === 'once' ? 'one-time check' : `checked ${data.tracker.frequency}`}
-                {data.tracker.nextRunAt && data.tracker.active ? ` · next run ${fmtDate(data.tracker.nextRunAt)}` : ''}
-                {!data.tracker.active ? ' · paused' : ''}
-              </p>
-            </div>
+            <p className={sectionTitleCls} style={wdth}>
+              Organization: <span className="font-medium text-rust">{data.tracker.orgName}</span>
+            </p>
 
-            {/* Private link note */}
-            <div className="bg-cloud border border-rust rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <p className="text-slate text-[14px] leading-[1.6]" style={wdth}>
-                <span className="font-medium text-ink">This is a private link.</span> Anyone who has it can view this
-                tracker, so bookmark it and share it only with people you trust.
+            {/* Private link note: plain text + small button, shown on both tabs */}
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-cloud text-[15px] leading-[1.6]" style={wdth}>
+                <span className="font-medium">This is a private link.</span> Anyone who has it can view this tracker, so
+                bookmark it and share it only with people you trust.
               </p>
-              <button type="button" onClick={copyLink} className={secondaryBtn} style={wdth}>
+              <button type="button" onClick={copyLink} className={smallBtn} style={wdth}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-rust group-hover:text-cloud shrink-0" aria-hidden="true">
+                  <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+                  <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
                 {copied ? 'copied' : 'copy link'}
               </button>
             </div>
 
+            <div className="flex">
+              <Segmented
+                onDark
+                value={tab}
+                onChange={setTab}
+                options={[
+                  { value: 'report', label: 'report' },
+                  { value: 'manage', label: 'manage tracking' },
+                ]}
+              />
+            </div>
+
+            {tab === 'report' && (
+              <>
             {/* Progress */}
             {running && (
               <div className="bg-cloud border border-rust rounded-lg p-4 flex flex-col gap-3">
@@ -316,41 +365,96 @@ export default function TrackerPage({ token }: { token: string }) {
                 </div>
               </div>
             </div>
+              </>
+            )}
 
-            {/* Controls */}
-            <div className="bg-cloud border border-rust rounded-lg p-6 flex flex-col gap-4">
-              <p className={labelCls} style={wdth}>Manage this tracker</p>
-              <Segmented
-                size="secondary"
-                value={data.tracker.frequency}
-                onChange={(f) => act({ action: 'update', frequency: f })}
-                options={[
-                  { value: 'once', label: 'once' },
-                  { value: 'weekly', label: 'weekly' },
-                  { value: 'monthly', label: 'monthly' },
-                ]}
-              />
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  className={secondaryBtn}
-                  style={wdth}
-                  onClick={() => act({ action: 'update', active: !data.tracker.active })}
-                >
-                  {data.tracker.active ? 'pause' : 'resume'}
-                </button>
-                {!confirmDelete ? (
-                  <button type="button" className={secondaryBtn} style={wdth} onClick={() => setConfirmDelete(true)}>
-                    delete tracker
+            {tab === 'manage' && (
+              <div className="flex flex-col gap-6 w-full">
+                <p className="text-cloud/70 text-[14px] leading-[1.6]" style={wdth}>
+                  {!data.tracker.active
+                    ? 'This tracker is paused.'
+                    : data.tracker.frequency === 'once'
+                      ? 'One-time check: it won’t run again unless you change how often below.'
+                      : data.tracker.nextRunAt
+                        ? `Next scheduled run: ${fmtDate(data.tracker.nextRunAt)}.`
+                        : ''}
+                </p>
+
+                <div className="flex flex-col gap-3 items-start w-full">
+                  <FieldLabel>How often</FieldLabel>
+                  <Segmented
+                    size="secondary"
+                    onDark
+                    value={draftFreq}
+                    onChange={(f) => { setDraftFreq(f); setDirty(true); }}
+                    options={[
+                      { value: 'once', label: 'once' },
+                      { value: 'weekly', label: 'weekly' },
+                      { value: 'monthly', label: 'monthly' },
+                    ]}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <QuestionsField
+                    onDark
+                    text={draftText}
+                    setText={(t) => { setDraftText(t); setDirty(true); }}
+                  />
+                </div>
+
+                <div className="flex flex-col items-start gap-3">
+                  <button
+                    type="button"
+                    onClick={save}
+                    disabled={!dirty || saving || draftText.split('\n').filter((l) => l.trim()).length === 0 ||
+                      draftText.split('\n').filter((l) => l.trim()).length > MAX_QUESTIONS}
+                    className={primaryBtn(!dirty || saving)}
+                    style={wdth}
+                  >
+                    {saving ? 'Saving…' : 'Save changes'}
                   </button>
-                ) : (
-                  <button type="button" className={primaryBtn(false)} style={wdth} onClick={del}>
-                    confirm delete (can’t be undone)
+                  <p className="text-cloud/70 text-[12px] leading-[1.6]" style={wdth}>
+                    Adding new questions starts a fresh check of your whole list. Removed questions stay in past runs.
+                  </p>
+                  {notice && <p className="text-cloud text-[14px]" style={wdth}>{notice}</p>}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    className={smallBtn}
+                    style={wdth}
+                    onClick={() => act({ action: 'update', active: !data.tracker.active })}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-rust group-hover:text-cloud shrink-0" aria-hidden="true">
+                      {data.tracker.active ? (
+                        <path d="M5.5 3v10M10.5 3v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      ) : (
+                        <path d="M5 3l8 5-8 5V3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                      )}
+                    </svg>
+                    {data.tracker.active ? 'pause' : 'resume'}
                   </button>
-                )}
+                  <button
+                    type="button"
+                    className={confirmDelete ? `${smallBtn} !bg-[#a85c4a] !border-[#a85c4a] !text-white` : smallBtn}
+                    style={wdth}
+                    onClick={confirmDelete ? del : () => setConfirmDelete(true)}
+                  >
+                    <svg
+                      width="14" height="14" viewBox="0 0 16 16" fill="none"
+                      className={`shrink-0 ${confirmDelete ? 'text-white' : 'text-rust group-hover:text-cloud'}`}
+                      aria-hidden="true"
+                    >
+                      <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 8.5h6l.5-8.5M6.8 7v4M9.2 7v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {confirmDelete ? 'confirm delete (can’t be undone)' : 'delete tracker'}
+                  </button>
+                </div>
+                {error && <p className="text-[#e0846f] text-[13px]" style={wdth}>{error}</p>}
               </div>
-              {error && <p className="text-[#a85c4a] text-[13px]" style={wdth}>{error}</p>}
-            </div>
+            )}
           </div>
         )}
 

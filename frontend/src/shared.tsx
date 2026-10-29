@@ -132,15 +132,22 @@ export function Segmented<T extends string>({
   options,
   onChange,
   size = 'primary',
+  onDark = false,
 }: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
   size?: 'primary' | 'secondary';
+  onDark?: boolean; // for use on the navy page background (orange primary, light secondary)
 }) {
   const sm = size === 'secondary';
+  const border = onDark ? (sm ? 'border-cloud/40' : 'border-rust') : sm ? 'border-slate/45' : 'border-ink/55';
+  const active = onDark
+    ? sm ? 'bg-cloud text-ink font-medium' : 'bg-rust text-white font-medium'
+    : `${sm ? 'bg-slate' : 'bg-ink'} text-white font-medium`;
+  const inactive = `${onDark ? 'text-cloud' : 'text-ink'} font-normal`;
   return (
-    <div className={`border ${sm ? 'border-slate/45' : 'border-ink/55'} rounded-full flex items-center ${sm ? 'p-[4px]' : 'p-[6px]'}`}>
+    <div className={`border ${border} rounded-full inline-flex items-center ${sm ? 'p-[4px]' : 'p-[6px]'}`}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -148,7 +155,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={`rounded-full uppercase whitespace-nowrap transition-colors ${
             sm ? 'px-[10px] py-[6px] text-[11px]' : 'px-3 py-[10px] text-[12px]'
-          } ${value === o.value ? `${sm ? 'bg-slate' : 'bg-ink'} text-white font-medium` : 'text-ink font-normal'}`}
+          } ${value === o.value ? active : inactive}`}
           style={wdth}
         >
           {o.label}
