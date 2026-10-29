@@ -112,7 +112,7 @@ export default function TrackForm() {
 
       <div className="flex flex-col gap-2 items-start w-full">
         <FieldLabel>
-          Email <span className="normal-case font-normal text-slate tracking-normal">(optional)</span>
+          Email <span className="normal-case font-normal text-slate/55 tracking-normal">(optional)</span>
         </FieldLabel>
         <p className="text-[12px] leading-[1.6] text-slate/55" style={wdth}>
           We’ll send you a link to your citation tracking report in the next few minutes, and a reminder to check it
