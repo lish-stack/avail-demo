@@ -243,14 +243,14 @@ function HomePage() {
         <Wordmark />
 
         <div className="flex flex-col gap-[20px] md:gap-[24px] xl:gap-[32px] items-start w-full">
-          <div className="flex md:hidden flex-col gap-[2px] items-center justify-center leading-[1.2] text-[24px] tracking-[0.24px] uppercase w-full text-center">
+          <div className="flex md:hidden flex-col gap-[4px] items-center justify-center leading-[1.35] text-[24px] tracking-[0.24px] uppercase w-full text-center">
             <div className="flex gap-[8px] items-center justify-center whitespace-nowrap">
               <span className="text-cloud font-normal" style={wdth}>Does AI</span>
               <span className="text-rust font-medium" style={wdth}>actually</span>
             </div>
             <span className="text-cloud font-normal" style={wdth}>cite this organization's work?</span>
           </div>
-          <div className="hidden md:flex flex-col gap-[2px] xl:gap-[4px] items-center justify-center leading-[1.2] text-[32px] xl:text-[40px] tracking-[0.32px] xl:tracking-[0.4px] uppercase w-full text-center whitespace-nowrap">
+          <div className="hidden md:flex flex-col gap-[6px] xl:gap-[8px] items-center justify-center leading-[1.35] text-[32px] xl:text-[40px] tracking-[0.32px] xl:tracking-[0.4px] uppercase w-full text-center whitespace-nowrap">
             <div className="flex gap-[12px] items-center justify-center">
               <span className="text-cloud font-normal" style={wdth}>Does AI</span>
               <span className="text-rust font-medium" style={wdth}>actually</span>
