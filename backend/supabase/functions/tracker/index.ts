@@ -8,6 +8,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ASSISTANT_LABELS, KNOWN_ORGS } from "../_shared/assistants.ts";
+import { sendEmail, welcomeEmail } from "../_shared/email.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -146,6 +147,12 @@ serve(async (req: Request) => {
         })));
       const { error: iErr } = await supabase.from("run_items").insert(items);
       if (iErr) throw new Error(iErr.message);
+
+      // Optional: email the private link (never blocks creation)
+      if (email) {
+        const m = welcomeEmail(orgName, tracker.token, frequency);
+        await sendEmail(email, m.subject, m.text);
+      }
 
       return json({ token: tracker.token, questionCount: questions.length, totalChecks: items.length });
     }

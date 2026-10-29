@@ -111,12 +111,18 @@ export default function TrackForm() {
       </div>
 
       <div className="flex flex-col gap-2 items-start w-full">
-        <FieldLabel>Email (optional)</FieldLabel>
+        <FieldLabel>
+          Email <span className="normal-case font-normal text-slate tracking-normal">(optional)</span>
+        </FieldLabel>
+        <p className="text-[12px] leading-[1.6] text-slate/55" style={wdth}>
+          We’ll send you a link to your citation tracking report in the next few minutes, and a reminder to check it
+          when it updates (if you selected the weekly or monthly tracking option).
+        </p>
         <input
           className={inputCls}
           style={wdth}
           type="email"
-          placeholder="For weekly reports (coming soon)"
+          placeholder="you@example.org"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />

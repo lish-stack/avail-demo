@@ -12,6 +12,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CALLERS, hostOf, matchesDomains } from "../_shared/assistants.ts";
+import { sendEmail, updatedEmail } from "../_shared/email.ts";
 
 const BATCH_SIZE = 10;
 const DAILY_ITEM_CAP = 500;      // hard ceiling on API calls per day across all trackers
@@ -122,13 +123,25 @@ serve(async (req: Request) => {
     }
 
     // 5. Close runs with nothing left to do
-    const { data: open } = await supabase.from("tracker_runs").select("id").eq("status", "running").limit(50);
+    const { data: open } = await supabase.from("tracker_runs").select("id, tracker_id, run_type").eq("status", "running").limit(50);
     for (const r of open ?? []) {
       const { count } = await supabase.from("run_items").select("*", { count: "exact", head: true })
         .eq("run_id", r.id).in("status", ["pending", "processing"]);
       if ((count ?? 0) === 0) {
         await supabase.from("tracker_runs")
           .update({ status: "done", completed_at: new Date().toISOString() }).eq("id", r.id);
+
+        // Reminder email when a later run finishes (weekly/monthly trackers with an email on file)
+        if (r.run_type === "scheduled") {
+          const { data: t } = await supabase.from("trackers")
+            .select("org_name, token, frequency, report_email").eq("id", r.tracker_id).single();
+          if (t?.report_email && t.frequency !== "once") {
+            const { data: its } = await supabase.from("run_items").select("cited").eq("run_id", r.id).eq("status", "ok");
+            const pct = its?.length ? Math.round((its.filter((i) => i.cited).length / its.length) * 100) : null;
+            const m = updatedEmail(t.org_name, t.token, pct);
+            await sendEmail(t.report_email, m.subject, m.text);
+          }
+        }
       }
     }
 
