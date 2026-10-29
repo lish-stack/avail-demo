@@ -21,6 +21,7 @@ const ORG_DOMAINS: Record<string, string[]> = {
   "PETA": ["peta.org"],
   "The Humane League": ["thehumaneleague.org"],
   "Animal Equality": ["animalequality.org", "animalequality.org.uk"],
+  "Balanced": ["balanced.org"],
   "Compassion in World Farming": ["ciwf.org.uk", "ciwf.org", "ciwf.com"],
   "Farm Sanctuary": ["farmsanctuary.org"],
   "Vegan Outreach": ["veganoutreach.org"],

@@ -43,6 +43,7 @@ const SAMPLE_QUESTIONS = [
 // org_specific category. Shown first in the dropdown whenever that org is selected.
 const ORG_SPECIFIC_QUESTIONS: Record<string, string> = {
   'Animal Equality': 'Does Animal Equality do undercover investigations?',
+  'Balanced': 'What does Balanced do to improve nutrition security?',
   'Compassion in World Farming': 'Is Compassion in World Farming a UK-only organization?',
   'Farm Sanctuary': 'What has Farm Sanctuary accomplished for animal welfare?',
   'Faunalytics': 'What does Faunalytics research?',

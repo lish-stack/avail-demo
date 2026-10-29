@@ -10,6 +10,7 @@ export const TRACKER_URL = EDGE_FUNCTION_URL.replace(/run-demo\/?$/, 'tracker');
 
 export const ORGS = [
   'Animal Equality',
+  'Balanced',
   'Compassion in World Farming',
   'Farm Sanctuary',
   'Faunalytics',
