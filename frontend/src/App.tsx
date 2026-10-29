@@ -243,21 +243,13 @@ function HomePage() {
         <Wordmark />
 
         <div className="flex flex-col gap-[20px] md:gap-[24px] xl:gap-[32px] items-start w-full">
-          <div className="flex md:hidden flex-col gap-[4px] items-center justify-center leading-[1.35] text-[24px] tracking-[0.24px] uppercase w-full text-center">
-            <div className="flex gap-[8px] items-center justify-center whitespace-nowrap">
-              <span className="text-cloud font-normal" style={wdth}>Does AI</span>
-              <span className="text-rust font-medium" style={wdth}>actually</span>
-            </div>
-            <span className="text-cloud font-normal" style={wdth}>cite this organization's work?</span>
-          </div>
-          <div className="hidden md:flex flex-col gap-[6px] xl:gap-[8px] items-center justify-center leading-[1.35] text-[32px] xl:text-[40px] tracking-[0.32px] xl:tracking-[0.4px] uppercase w-full text-center whitespace-nowrap">
-            <div className="flex gap-[12px] items-center justify-center">
-              <span className="text-cloud font-normal" style={wdth}>Does AI</span>
-              <span className="text-rust font-medium" style={wdth}>actually</span>
-              <span className="text-cloud font-normal" style={wdth}>cite this</span>
-            </div>
-            <span className="text-cloud font-normal" style={wdth}>organization's work?</span>
-          </div>
+          {/* One paragraph so every line break gets the same line-height (no per-line gaps) */}
+          <h1
+            className="text-[24px] md:text-[32px] xl:text-[40px] tracking-[0.24px] md:tracking-[0.32px] xl:tracking-[0.4px] leading-[1.4] uppercase w-full text-center text-cloud font-normal"
+            style={{ ...wdth, textWrap: 'balance' } as React.CSSProperties}
+          >
+            Does AI <span className="text-rust font-medium">actually</span> cite this organization's work?
+          </h1>
           <div className="flex flex-col items-center w-full">
             <p
               className="text-cloud text-[16px] md:text-[18px] xl:text-[20px] text-center tracking-[-0.08px] md:tracking-[-0.09px] xl:tracking-[-0.1px] leading-[1.6] max-w-[768px]"
